@@ -116,8 +116,8 @@ Initiates a new battle with the specified type and participants.
         "team1": ["string"],
         "team2": ["string"]
     },
-    "terrain": "string", // Optional, defaults to "neutral"
-    "weather": "string"  // Optional, defaults to "clear"
+    "terrain": "string", // One of: "neutral", "steam-rich", "mechanical", "toxic", "forest", "mountain", "plains", "desert", "swamp", "steam-city"
+    "weather": "string"  // One of: "clear", "steam-fog", "acid-rain", "strong-wind"
 }
 ```
 
@@ -191,7 +191,8 @@ Initiates a new battle with the specified type and participants.
                     "description": "string"
                 }
             ]
-        }
+        },
+        "active_index": "integer" // Index of the active participant in turn order
     },
     "error": "string" // Optional error message
 }
@@ -300,50 +301,152 @@ Gets the current status of a battle.
 }
 ```
 
-## World Interaction
+## World Map
 
-### Get Location
+### Get World Map
 ```http
-GET /api/world/location?x={x}&y={y}
+GET /api/world/map
 ```
 
-Gets information about a location in the world.
+Returns the current state of the world map.
 
 **Response:**
 ```json
 {
-    "location": {
-        "name": "string",
-        "description": "string",
-        "region": "string",
-        "terrain": "string",
-        "coordinates": {
-            "x": "integer",
-            "y": "integer"
+    "width": "integer",
+    "height": "integer",
+    "regions": [
+        {
+            "name": "string",
+            "level": "integer",
+            "terrain": "string",
+            "bounds": {
+                "min_x": "integer",
+                "min_y": "integer",
+                "max_x": "integer",
+                "max_y": "integer"
+            }
         }
+    ],
+    "locations": [
+        {
+            "id": "string",
+            "name": "string",
+            "type": "string", // One of: "normal", "dungeon", "town", "resource", "ruin"
+            "description": "string",
+            "terrain": "string",
+            "region": "string",
+            "coordinates": {
+                "x": "integer",
+                "y": "integer"
+            },
+            "properties": {
+                "difficulty": "integer",
+                "steam_power_bonus": "integer",
+                "resources": ["string"],
+                "mob_types": ["string"],
+                "special_features": ["string"]
+            }
+        }
+    ]
+}
+```
+
+### Get Location
+```http
+GET /api/world/location/{x}/{y}
+```
+
+Returns information about a specific location on the map.
+
+**Response:**
+```json
+{
+    "id": "string",
+    "name": "string",
+    "type": "string",
+    "description": "string",
+    "terrain": "string",
+    "region": "string",
+    "coordinates": {
+        "x": "integer",
+        "y": "integer"
+    },
+    "properties": {
+        "difficulty": "integer",
+        "steam_power_bonus": "integer",
+        "resources": ["string"],
+        "mob_types": ["string"],
+        "special_features": ["string"]
     }
 }
 ```
 
 ### Get Nearby Locations
 ```http
-GET /api/world/nearby?x={x}&y={y}&distance={distance}
+GET /api/world/nearby/{x}/{y}/{distance}
 ```
 
-Gets all locations within a certain distance of the given coordinates.
+Returns all locations within the specified distance of the given coordinates.
 
 **Response:**
 ```json
 {
     "locations": [
         {
+            "id": "string",
             "name": "string",
+            "type": "string",
             "description": "string",
-            "region": "string",
             "terrain": "string",
+            "region": "string",
             "coordinates": {
                 "x": "integer",
                 "y": "integer"
+            },
+            "properties": {
+                "difficulty": "integer",
+                "steam_power_bonus": "integer",
+                "resources": ["string"],
+                "mob_types": ["string"],
+                "special_features": ["string"]
+            }
+        }
+    ]
+}
+```
+
+### Get Nearby Locations by Type
+```http
+GET /api/world/nearby/{type}/{x}/{y}/{distance}
+```
+
+Returns all locations of a specific type within the specified distance.
+
+**Parameters:**
+- `type`: One of: "dungeon", "town", "resource", "ruin"
+
+**Response:**
+```json
+{
+    "locations": [
+        {
+            "id": "string",
+            "name": "string",
+            "type": "string",
+            "description": "string",
+            "terrain": "string",
+            "region": "string",
+            "coordinates": {
+                "x": "integer",
+                "y": "integer"
+            },
+            "properties": {
+                "difficulty": "integer",
+                "steam_power_bonus": "integer",
+                "resources": ["string"],
+                "mob_types": ["string"],
+                "special_features": ["string"]
             }
         }
     ]
@@ -370,40 +473,28 @@ Moves a character to a new location.
 ```json
 {
     "success": "boolean",
-    "error": "string" // Optional error message
-}
-```
-
-### Get Nearby Mobs
-```http
-GET /api/world/nearby-mobs?x={x}&y={y}&distance={distance}
-```
-
-Gets all mobs within a certain distance of the given coordinates.
-
-**Response:**
-```json
-{
-    "mobs": [
-        {
-            "id": "string",
-            "name": "string",
-            "type": "string",
-            "level": "integer",
-            "health": "integer",
-            "steam_power": "integer",
-            "money_drop": {
-                "copper": "integer",
-                "silver": "integer",
-                "gold": "integer",
-                "platinum": "integer"
-            },
-            "location": {
-                "x": "integer",
-                "y": "integer"
-            }
+    "new_location": {
+        "id": "string",
+        "name": "string",
+        "type": "string",
+        "description": "string",
+        "terrain": "string",
+        "region": "string",
+        "coordinates": {
+            "x": "integer",
+            "y": "integer"
+        },
+        "properties": {
+            "difficulty": "integer",
+            "steam_power_bonus": "integer",
+            "resources": ["string"],
+            "mob_types": ["string"],
+            "special_features": ["string"]
         }
-    ]
+    },
+    "steam_power_cost": "integer",
+    "steam_power_bonus": "integer",
+    "error": "string" // Optional error message
 }
 ```
 

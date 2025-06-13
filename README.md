@@ -1,155 +1,143 @@
-# Roleplay Game
+# Steam-Powered RPG
 
-A steampunk-themed roleplaying game with a focus on character development, combat, and world exploration.
+A steampunk-themed role-playing game with a focus on steam-powered combat and exploration.
 
 ## Features
 
-### Character System
-- Multiple character classes: Engineer, Alchemist, Aeronaut, Clockwork Knight, and Steam Mage
-- Attribute-based progression system
-- Steam power management
-- Equipment and inventory system
-- Money system with multiple denominations (Copper, Silver, Gold, Platinum)
+### World Map
+The game features a procedurally generated world map with various regions and locations:
+
+#### Regions
+- **Steam City**: A bustling metropolis powered by steam technology (Level 1)
+- **Mountain Range**: A treacherous mountain range with valuable resources (Level 3)
+- **Ancient Forest**: A mysterious forest with ancient technology (Level 2)
+- **Steam Desert**: A scorching desert with steam-powered sandstorms (Level 4)
+- **Steam Swamp**: A misty swamp with steam-powered research facilities (Level 3)
+- **Steam Plains**: Vast plains dotted with steam-powered windmills (Level 1)
+
+#### Location Types
+- **Towns**: Safe havens with shops, inns, and workshops
+- **Dungeons**: Dangerous areas with traps, treasure rooms, and boss encounters
+- **Resource Nodes**: Rich sources of valuable materials and steam technology
+- **Ruins**: Ancient remains of steam-powered civilizations
+- **Normal Locations**: Typical areas with standard encounters
+
+#### Terrain Types
+- **Forest**: Dense forests with steam-powered trees and mechanical wildlife
+- **Mountain**: Towering mountains with steam vents and mechanical caves
+- **Plains**: Vast plains with steam-powered windmills and mechanical herds
+- **Desert**: Scorching deserts with steam-powered sandstorms
+- **Swamp**: Misty swamps with steam-powered research facilities
+- **Steam City**: Bustling cities powered by steam technology
+
+Each terrain type affects:
+- Movement cost
+- Steam power regeneration
+- Available resources
+- Enemy types
+- Visibility
+
+### Character Classes
+- **Engineer**: Masters of mechanical technology and steam power
+- **Alchemist**: Experts in chemical reactions and steam-based potions
+- **Aeronaut**: Skilled pilots of steam-powered airships
+- **Clockwork Knight**: Warriors enhanced by steam-powered armor
+- **Steam Mage**: Wielders of arcane steam magic
 
 ### Combat System
-- Unified battle system for both PvP and PvE combat
-- Turn-based combat mechanics with initiative-based order
-- Ability-based combat actions with cooldowns
-- Steam power consumption for abilities
-- Experience and leveling system
-- Money drops from defeated enemies
-- Status effects system with duration-based effects
-- Terrain and weather effects on combat
-- Team-based combat support
-- Area of effect abilities
-- Combat logging system
-- Battle rewards distribution
+The game features a turn-based combat system with:
+- Steam power management
+- Terrain and weather effects
+- Status effects
+- Team-based combat
+- Multiple battle types (PvP, PvE, Raid)
 
-### Battle Types
-- PvP (Player vs Player)
-- PvE (Player vs Environment)
-- Raid (Multiple players vs powerful enemies)
+#### Battle Types
+- **PvP**: Player vs Player combat
+- **PvE**: Player vs Environment combat
+- **Raid**: Multiple players vs powerful enemies
 
-### Status Effects
-- Duration-based effects
-- Class-specific effects:
-  - Engineer: Steam Burn
-  - Alchemist: Poison
-  - Steam Mage: Steam Weakness
-- Effects can modify:
-  - Health
-  - Steam Power
-  - Attributes
-  - Combat effectiveness
+#### Status Effects
+- **Steam Burn**: Damage over time from steam-based attacks
+- **Mechanical Enhancement**: Temporary boost to mechanical abilities
+- **Chemical Reaction**: Random effects from chemical attacks
+- **Arcane Binding**: Movement restriction from arcane attacks
 
-### Terrain Effects
-- Steam-rich: Enhanced steam-based abilities
-- Mechanical: Bonus for mechanical abilities
-- Toxic: Bonus for chemical abilities
-- Affects damage and healing calculations
+#### Terrain Effects
+- **Steam-rich**: Enhanced steam-based abilities
+- **Mechanical**: Bonus for mechanical abilities
+- **Toxic**: Bonus for chemical abilities
+- **Forest**: Bonus for nature-based abilities
+- **Mountain**: Bonus for defensive abilities
+- **Plains**: Balanced combat environment
+- **Desert**: Penalty to steam power regeneration
+- **Swamp**: Penalty to movement speed
+- **Steam City**: Bonus to all steam-based abilities
 
-### Weather Effects
-- Steam-fog: Penalty to ranged abilities
-- Acid-rain: General combat penalty
-- Affects ability effectiveness
+#### Weather Effects
+- **Steam Fog**: Reduced visibility and ranged attack accuracy
+- **Acid Rain**: Damage to steam-powered equipment
+- **Strong Wind**: Affects steam power regeneration
+- **Clear**: Optimal combat conditions
 
-### World System
-- Dynamic world map with different regions
-- Terrain-based movement costs
-- Steam power regeneration based on terrain
-- Mob spawning system with different types:
-  - Mechanical (Steam-powered constructs)
-  - Biological (Mutated creatures)
-  - Hybrid (Steam-cyborgs)
-  - Elemental (Steam and metal elementals)
-  - Construct (Massive mechanical beings)
+### World Systems
+- Dynamic weather and time of day
+- Resource gathering and crafting
+- Steam power management
+- Character progression
+- Quest system
 
-### Money System
-- Four denominations: Copper, Silver, Gold, and Platinum
-- Automatic conversion between denominations
-- Money drops from defeated mobs based on:
-  - Mob level
-  - Mob type (different multipliers)
-  - Random variation
-- Money transfer between characters
-- Starting money: 100 copper for new characters
+### Money Management
+- Multiple currency types (Copper, Silver, Gold, Platinum)
+- Trading system
+- Item economy
 
-## API Documentation
+## Installation
 
-The game provides a RESTful API for all interactions. See [API Documentation](docs/api.md) for detailed endpoint information.
-
-### Key Endpoints
-- Character Management (`/api/character/*`)
-- Combat System (`/api/combat/*`, `/api/mob-combat/*`)
-- World Interaction (`/api/world/*`)
-- Money Management (`/api/character/{id}/money`, `/api/character/transfer-money`)
-
-## Getting Started
-
-### Prerequisites
-- Go 1.16 or higher
-- Redis server
-
-### Installation
 1. Clone the repository
-```bash
-git clone https://github.com/yourusername/roleplay.git
-cd roleplay
-```
-
 2. Install dependencies
-```bash
-go mod download
-```
-
-3. Start Redis server
-```bash
-redis-server
-```
-
-4. Run the game server
-```bash
-go run cmd/server/main.go
-```
+3. Run the game server
+4. Connect to the game
 
 ## Game Mechanics
 
-### Character Creation
-- Choose from 5 unique classes
-- Each class has specific attribute bonuses
-- Starting equipment based on class
-- 100 copper starting money
+### Steam Power
+Steam power is the primary resource in the game:
+- Regenerates over time
+- Affected by terrain and weather
+- Used for abilities and movement
+- Can be enhanced by equipment
 
-### Combat
-- Turn-based system with initiative
-- Steam power management
-- Ability cooldowns
-- Money and experience rewards
+### Terrain Effects
+Different terrains provide various effects:
+- Movement cost
+- Steam power bonus/penalty
+- Visibility range
+- Resource availability
+- Enemy types
 
-### World Exploration
-- Terrain affects movement and steam power
-- Different regions with unique properties
-- Dynamic mob spawning
-- Money drops scale with mob difficulty
+### Weather Effects
+Weather conditions affect gameplay:
+- Steam fog reduces visibility
+- Acid rain damages steam-powered equipment
+- Strong winds affect steam power regeneration
+- Clear weather provides optimal conditions
 
-### Money System
-- Automatic denomination conversion
-- Safe money transfer between characters
-- Mob-specific money drop tables
-- Money can be used for:
-  - Purchasing items
-  - Trading with other players
-  - Upgrading equipment
-  - Learning new abilities
+### Status Effects
+Various status effects can be applied:
+- Steam burn (damage over time)
+- Mechanical enhancement (attribute boost)
+- Chemical reaction (random effects)
+- Arcane binding (movement restriction)
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a pull request
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.

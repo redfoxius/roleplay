@@ -3,6 +3,7 @@ package world
 import (
 	"math"
 	"math/rand"
+	"time"
 
 	"roleplay/internal/common"
 )
@@ -13,7 +14,19 @@ type Location struct {
 	Description string
 	Terrain     TerrainType
 	Region      string
+	Type        LocationType // New field for special locations
 }
+
+// LocationType represents different types of special locations
+type LocationType string
+
+const (
+	LocationTypeNormal   LocationType = "normal"
+	LocationTypeDungeon  LocationType = "dungeon"
+	LocationTypeTown     LocationType = "town"
+	LocationTypeResource LocationType = "resource"
+	LocationTypeRuin     LocationType = "ruin"
+)
 
 // Region represents a larger area of the world
 type Region struct {
@@ -21,6 +34,7 @@ type Region struct {
 	Description string
 	Terrain     TerrainType
 	Locations   []Location
+	Level       int // Difficulty level of the region
 }
 
 // WorldMap represents the game world
@@ -29,15 +43,20 @@ type WorldMap struct {
 	Height    int
 	Regions   map[string]*Region
 	Locations map[common.Coordinates]*Location
+	Seed      int64 // Seed for consistent generation
 }
 
 // NewWorldMap creates a new world map
 func NewWorldMap(width, height int) *WorldMap {
+	seed := time.Now().UnixNano()
+	rand.Seed(seed)
+
 	wm := &WorldMap{
 		Width:     width,
 		Height:    height,
 		Regions:   make(map[string]*Region),
 		Locations: make(map[common.Coordinates]*Location),
+		Seed:      seed,
 	}
 	wm.generateWorld()
 	return wm
@@ -51,22 +70,43 @@ func (wm *WorldMap) generateWorld() {
 
 // generateRegions generates the regions of the world
 func (wm *WorldMap) generateRegions() {
-	// Create predefined regions
+	// Create predefined regions with difficulty levels
 	regions := []*Region{
 		{
 			Name:        "Steam City",
 			Description: "A bustling metropolis powered by steam technology",
 			Terrain:     SteamCity,
+			Level:       1,
 		},
 		{
 			Name:        "Mountain Range",
 			Description: "A treacherous mountain range with valuable resources",
 			Terrain:     Mountain,
+			Level:       3,
 		},
 		{
 			Name:        "Ancient Forest",
 			Description: "A mysterious forest with ancient technology",
 			Terrain:     Forest,
+			Level:       2,
+		},
+		{
+			Name:        "Steam Desert",
+			Description: "A scorching desert with steam-powered sandstorms",
+			Terrain:     Desert,
+			Level:       4,
+		},
+		{
+			Name:        "Steam Swamp",
+			Description: "A misty swamp with steam-powered research facilities",
+			Terrain:     Swamp,
+			Level:       3,
+		},
+		{
+			Name:        "Steam Plains",
+			Description: "Vast plains dotted with steam-powered windmills",
+			Terrain:     Plains,
+			Level:       1,
 		},
 	}
 
@@ -79,19 +119,26 @@ func (wm *WorldMap) generateRegions() {
 // generateLocations generates locations within regions
 func (wm *WorldMap) generateLocations() {
 	// Generate random locations
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 100; i++ {
 		x := rand.Intn(wm.Width)
 		y := rand.Intn(wm.Height)
 
-		// Determine terrain type
+		// Determine terrain type using Perlin noise
 		terrain := wm.getTerrainAt(x, y)
+
+		// Determine location type
+		locationType := wm.determineLocationType(terrain)
+
+		// Get location properties
+		props := GetLocationProperties(locationType, terrain)
 
 		// Create location
 		location := &Location{
-			Name:        generateLocationName(terrain),
-			Description: generateLocationDescription(terrain),
+			Name:        props.Name,
+			Description: props.Description,
 			Terrain:     terrain,
 			Region:      wm.getRegionAt(x, y),
+			Type:        locationType,
 		}
 
 		// Add location to the world map
@@ -99,10 +146,11 @@ func (wm *WorldMap) generateLocations() {
 	}
 }
 
-// getTerrainAt returns the terrain type at the given coordinates
+// getTerrainAt returns the terrain type at the given coordinates using Perlin noise
 func (wm *WorldMap) getTerrainAt(x, y int) TerrainType {
-	// Simple terrain generation based on coordinates
-	noise := rand.Float64()
+	// Use Perlin noise for more natural terrain generation
+	noise := perlinNoise(float64(x)/50.0, float64(y)/50.0, wm.Seed)
+
 	switch {
 	case noise < 0.2:
 		return Forest
@@ -115,6 +163,52 @@ func (wm *WorldMap) getTerrainAt(x, y int) TerrainType {
 	default:
 		return Swamp
 	}
+}
+
+// determineLocationType determines the type of location based on terrain and random chance
+func (wm *WorldMap) determineLocationType(terrain TerrainType) LocationType {
+	chance := rand.Float64()
+
+	switch terrain {
+	case SteamCity:
+		if chance < 0.3 {
+			return LocationTypeTown
+		}
+	case Mountain:
+		if chance < 0.4 {
+			return LocationTypeDungeon
+		} else if chance < 0.6 {
+			return LocationTypeResource
+		}
+	case Forest:
+		if chance < 0.3 {
+			return LocationTypeRuin
+		} else if chance < 0.5 {
+			return LocationTypeResource
+		}
+	case Desert:
+		if chance < 0.4 {
+			return LocationTypeRuin
+		} else if chance < 0.6 {
+			return LocationTypeResource
+		}
+	case Swamp:
+		if chance < 0.3 {
+			return LocationTypeDungeon
+		} else if chance < 0.5 {
+			return LocationTypeResource
+		}
+	}
+
+	return LocationTypeNormal
+}
+
+// perlinNoise generates Perlin noise for terrain generation
+func perlinNoise(x, y float64, seed int64) float64 {
+	// Simple implementation of Perlin noise
+	// In a real implementation, you would use a proper Perlin noise library
+	rand.Seed(seed + int64(x*1000) + int64(y*1000))
+	return rand.Float64()
 }
 
 // getRegionAt returns the region at the given coordinates
@@ -207,6 +301,48 @@ func (wm *WorldMap) GetNearbyLocations(coords common.Coordinates, distance int) 
 		}
 	}
 	return nearby
+}
+
+// GetNearbyLocationsByType returns all locations of a specific type within a certain distance
+func (wm *WorldMap) GetNearbyLocationsByType(coords common.Coordinates, distance int, locationType LocationType) []*Location {
+	var nearby []*Location
+	for locCoords, location := range wm.Locations {
+		if distanceBetween(coords, locCoords) <= distance && location.Type == locationType {
+			nearby = append(nearby, location)
+		}
+	}
+	return nearby
+}
+
+// GetNearbyResources returns all resource locations within a certain distance
+func (wm *WorldMap) GetNearbyResources(coords common.Coordinates, distance int) []*Location {
+	return wm.GetNearbyLocationsByType(coords, distance, LocationTypeResource)
+}
+
+// GetNearbyTowns returns all town locations within a certain distance
+func (wm *WorldMap) GetNearbyTowns(coords common.Coordinates, distance int) []*Location {
+	return wm.GetNearbyLocationsByType(coords, distance, LocationTypeTown)
+}
+
+// GetNearbyDungeons returns all dungeon locations within a certain distance
+func (wm *WorldMap) GetNearbyDungeons(coords common.Coordinates, distance int) []*Location {
+	return wm.GetNearbyLocationsByType(coords, distance, LocationTypeDungeon)
+}
+
+// GetNearbyRuins returns all ruin locations within a certain distance
+func (wm *WorldMap) GetNearbyRuins(coords common.Coordinates, distance int) []*Location {
+	return wm.GetNearbyLocationsByType(coords, distance, LocationTypeRuin)
+}
+
+// GetLocationProperties returns the properties of a location
+func (wm *WorldMap) GetLocationProperties(coords common.Coordinates) *LocationProperties {
+	location := wm.GetLocationAt(coords)
+	if location == nil {
+		return nil
+	}
+
+	props := GetLocationProperties(location.Type, location.Terrain)
+	return &props
 }
 
 // UpdateWorld updates the world state
