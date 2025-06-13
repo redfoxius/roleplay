@@ -1,4 +1,24 @@
-# Roleplay Game API Documentation
+# API Documentation
+
+## Overview
+This document outlines the API endpoints for the Roleplay game server.
+
+## Docker Setup
+The application can be run using Docker Compose, which sets up the game server, Redis database, and Flutter client.
+
+### Docker Compose
+The `docker-compose.yml` file defines the services:
+- **Server**: Built from the current directory using `Dockerfile.server`, exposes port 8080.
+- **Redis**: Uses the official Redis image, exposes port 6379.
+- **Client**: Built from the `roleplay_client` directory using `Dockerfile.client`, exposes port 3000.
+
+### Running the Application
+To run the application, ensure Docker and Docker Compose are installed, then execute:
+```bash
+docker-compose up
+```
+
+## API Endpoints
 
 ## Character Management
 
@@ -520,5 +540,4 @@ All endpoints may return the following error responses:
 ```json
 {
     "error": "string" // Description of the error
-}
-``` 
+} 

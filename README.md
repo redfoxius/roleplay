@@ -92,12 +92,30 @@ The game features a turn-based combat system with:
 - Trading system
 - Item economy
 
+## Docker Setup
+The application can be run using Docker Compose, which sets up the game server, Redis database, and Flutter client.
+
+### Docker Compose
+The `docker-compose.yml` file defines the services:
+- **Server**: Built from the current directory using `Dockerfile.server`, exposes port 8080.
+- **Redis**: Uses the official Redis image, exposes port 6379.
+- **Client**: Built from the `roleplay_client` directory using `Dockerfile.client`, exposes port 3000.
+
+### Dockerfiles
+- **Server**: Uses a multi-stage build with `golang:1.21` for building the Go binary and `alpine:latest` for running it.
+- **Client**: Uses a multi-stage build with `ubuntu:latest` for building the Flutter app and `nginx:alpine` for serving it.
+
+### Running the Application
+To run the application, ensure Docker and Docker Compose are installed, then execute:
+```bash
+docker-compose up
+```
+
 ## Installation
 
 1. Clone the repository
-2. Install dependencies
-3. Run the game server
-4. Connect to the game
+2. Navigate to the project directory
+3. Run `docker-compose up` to start the server, database, and client
 
 ## Game Mechanics
 

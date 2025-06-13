@@ -1,0 +1,37 @@
+# Build stage
+FROM ubuntu:latest AS builder
+
+# Install Flutter dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    unzip \
+    xz-utils \
+    zip \
+    libglu1-mesa \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Flutter
+RUN git clone https://github.com/flutter/flutter.git /usr/local/flutter
+ENV PATH="/usr/local/flutter/bin:${PATH}"
+RUN flutter doctor
+
+WORKDIR /app
+
+# Copy the Flutter project
+COPY . .
+
+# Build the Flutter app
+RUN flutter build web
+
+# Final stage
+FROM nginx:alpine
+
+# Copy the built app from the builder stage
+COPY --from=builder /app/build/web /usr/share/nginx/html
+
+# Expose the port
+EXPOSE 3000
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"] 
