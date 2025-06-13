@@ -12,11 +12,46 @@ A steampunk-themed roleplaying game with a focus on character development, comba
 - Money system with multiple denominations (Copper, Silver, Gold, Platinum)
 
 ### Combat System
-- Turn-based combat mechanics
-- Ability-based combat actions
+- Unified battle system for both PvP and PvE combat
+- Turn-based combat mechanics with initiative-based order
+- Ability-based combat actions with cooldowns
 - Steam power consumption for abilities
 - Experience and leveling system
 - Money drops from defeated enemies
+- Status effects system with duration-based effects
+- Terrain and weather effects on combat
+- Team-based combat support
+- Area of effect abilities
+- Combat logging system
+- Battle rewards distribution
+
+### Battle Types
+- PvP (Player vs Player)
+- PvE (Player vs Environment)
+- Raid (Multiple players vs powerful enemies)
+
+### Status Effects
+- Duration-based effects
+- Class-specific effects:
+  - Engineer: Steam Burn
+  - Alchemist: Poison
+  - Steam Mage: Steam Weakness
+- Effects can modify:
+  - Health
+  - Steam Power
+  - Attributes
+  - Combat effectiveness
+
+### Terrain Effects
+- Steam-rich: Enhanced steam-based abilities
+- Mechanical: Bonus for mechanical abilities
+- Toxic: Bonus for chemical abilities
+- Affects damage and healing calculations
+
+### Weather Effects
+- Steam-fog: Penalty to ranged abilities
+- Acid-rain: General combat penalty
+- Affects ability effectiveness
 
 ### World System
 - Dynamic world map with different regions

@@ -30,14 +30,18 @@ type Attribute struct {
 	Value int
 }
 
-// Ability represents a character ability
+// Ability represents a character or mob ability
 type Ability struct {
 	Name        string
 	Description string
-	Type        string
+	Type        string // "damage", "healing", "mechanical", "chemical", "arcane", "ranged", "melee"
 	Damage      int
+	Healing     int
 	SteamCost   int
-	Cooldown    int
+	Range       int // Range of the ability in tiles
+	Area        int // Area of effect in tiles (0 for single target)
+	Cooldown    int // Cooldown in turns
+	LastUsed    int // Last round this ability was used
 }
 
 // LootTable represents a table of possible loot drops

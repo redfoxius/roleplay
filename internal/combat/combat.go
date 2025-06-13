@@ -1,10 +1,12 @@
 package combat
 
 import (
+	"math"
 	"math/rand"
 	"time"
 
 	"roleplay/internal/character"
+	"roleplay/internal/common"
 
 	"github.com/google/uuid"
 )
@@ -12,10 +14,15 @@ import (
 // Action represents a combat action
 type Action struct {
 	Name        string
+	Type        string // Can be: "mechanical", "chemical", "arcane", "ranged", "melee"
 	Damage      int
 	Healing     int
 	SteamCost   int
 	Description string
+	Range       int // Range of the action in tiles
+	Area        int // Area of effect in tiles (0 for single target)
+	Cooldown    int // Cooldown in turns
+	LastUsed    int // Last round this action was used
 }
 
 // CombatState represents the current state of combat
@@ -25,6 +32,30 @@ type CombatState struct {
 	TurnOrder       []*character.Character
 	CurrentTurn     int
 	Round           int
+	CombatLog       []CombatLogEntry
+	StatusEffects   map[string][]StatusEffect
+	Terrain         string
+	Weather         string
+}
+
+// CombatLogEntry represents a single entry in the combat log
+type CombatLogEntry struct {
+	Round     int
+	Turn      int
+	Character string
+	Action    string
+	Target    string
+	Damage    int
+	Healing   int
+	Effects   []string
+}
+
+// StatusEffect represents a temporary effect on a character
+type StatusEffect struct {
+	Name        string
+	Duration    int
+	Value       int
+	Description string
 }
 
 // NewCombatState creates a new combat state
@@ -41,6 +72,10 @@ func NewCombatState(participants []*character.Character) *CombatState {
 		TurnOrder:       participants,
 		CurrentTurn:     0,
 		Round:           1,
+		CombatLog:       make([]CombatLogEntry, 0),
+		StatusEffects:   make(map[string][]StatusEffect),
+		Terrain:         "neutral", // Can be: neutral, steam-rich, mechanical, toxic, etc.
+		Weather:         "clear",   // Can be: clear, steam-fog, acid-rain, etc.
 	}
 }
 
@@ -57,27 +92,158 @@ func sortByInitiative(participants []*character.Character) {
 	}
 }
 
-// ExecuteAction executes a combat action
+// ExecuteAction executes a combat action with enhanced effects
 func (cs *CombatState) ExecuteAction(action Action, target *character.Character) bool {
 	// Check if action is valid
 	if !cs.isValidAction(action, target) {
 		return false
 	}
 
+	// Calculate terrain and weather effects
+	terrainBonus := cs.calculateTerrainBonus(action)
+	weatherPenalty := cs.calculateWeatherPenalty(action)
+
 	// Apply action effects
+	var damage, healing int
 	if action.Damage > 0 {
-		damage := calculateDamage(action.Damage, cs.ActiveCharacter, target)
+		damage = calculateDamage(action.Damage, cs.ActiveCharacter, target)
+		damage = int(float64(damage) * terrainBonus * weatherPenalty)
 		target.Health -= damage
 	}
 
 	if action.Healing > 0 {
-		healing := calculateHealing(action.Healing, cs.ActiveCharacter)
+		healing = calculateHealing(action.Healing, cs.ActiveCharacter)
+		healing = int(float64(healing) * terrainBonus * weatherPenalty)
 		target.Health = min(target.Health+healing, target.MaxHealth)
 	}
+
+	// Apply status effects
+	cs.applyStatusEffects(cs.ActiveCharacter, target, action)
+
+	// Log the action
+	cs.logAction(action, target, damage, healing)
 
 	// Move to next turn
 	cs.nextTurn()
 	return true
+}
+
+// calculateTerrainBonus calculates bonus damage/healing based on terrain
+func (cs *CombatState) calculateTerrainBonus(action Action) float64 {
+	bonus := 1.0
+	switch cs.Terrain {
+	case "steam-rich":
+		if action.SteamCost > 0 {
+			bonus = 1.2
+		}
+	case "mechanical":
+		if cs.ActiveCharacter.Class == character.Engineer {
+			bonus = 1.15
+		}
+	case "toxic":
+		if cs.ActiveCharacter.Class == character.Alchemist {
+			bonus = 1.15
+		}
+	}
+	return bonus
+}
+
+// calculateWeatherPenalty calculates penalties based on weather
+func (cs *CombatState) calculateWeatherPenalty(action Action) float64 {
+	penalty := 1.0
+	switch cs.Weather {
+	case "steam-fog":
+		if action.Type == "ranged" {
+			penalty = 0.8
+		}
+	case "acid-rain":
+		penalty = 0.9
+	}
+	return penalty
+}
+
+// applyStatusEffects applies status effects to characters
+func (cs *CombatState) applyStatusEffects(attacker, target *character.Character, action Action) {
+	// Apply effects based on character class and action type
+	switch attacker.Class {
+	case character.Engineer:
+		if action.Type == "mechanical" {
+			cs.addStatusEffect(target.ID, StatusEffect{
+				Name:        "Steam Burn",
+				Duration:    2,
+				Value:       5,
+				Description: "Takes 5 damage per turn",
+			})
+		}
+	case character.Alchemist:
+		if action.Type == "chemical" {
+			cs.addStatusEffect(target.ID, StatusEffect{
+				Name:        "Poison",
+				Duration:    3,
+				Value:       3,
+				Description: "Takes 3 damage per turn",
+			})
+		}
+	case character.SteamMage:
+		if action.Type == "arcane" {
+			cs.addStatusEffect(target.ID, StatusEffect{
+				Name:        "Steam Weakness",
+				Duration:    2,
+				Value:       -10,
+				Description: "Steam power reduced by 10",
+			})
+		}
+	}
+}
+
+// addStatusEffect adds a status effect to a character
+func (cs *CombatState) addStatusEffect(characterID string, effect StatusEffect) {
+	cs.StatusEffects[characterID] = append(cs.StatusEffects[characterID], effect)
+}
+
+// logAction adds an entry to the combat log
+func (cs *CombatState) logAction(action Action, target *character.Character, damage, healing int) {
+	entry := CombatLogEntry{
+		Round:     cs.Round,
+		Turn:      cs.CurrentTurn,
+		Character: cs.ActiveCharacter.Name,
+		Action:    action.Name,
+		Target:    target.Name,
+		Damage:    damage,
+		Healing:   healing,
+		Effects:   make([]string, 0),
+	}
+
+	// Add status effects to log
+	for _, effect := range cs.StatusEffects[target.ID] {
+		entry.Effects = append(entry.Effects, effect.Name)
+	}
+
+	cs.CombatLog = append(cs.CombatLog, entry)
+}
+
+// GetCombatLog returns the combat log
+func (cs *CombatState) GetCombatLog() []CombatLogEntry {
+	return cs.CombatLog
+}
+
+// GetStatusEffects returns all status effects for a character
+func (cs *CombatState) GetStatusEffects(characterID string) []StatusEffect {
+	return cs.StatusEffects[characterID]
+}
+
+// UpdateStatusEffects updates all status effects
+func (cs *CombatState) UpdateStatusEffects() {
+	for charID, effects := range cs.StatusEffects {
+		var remainingEffects []StatusEffect
+		for _, effect := range effects {
+			effect.Duration--
+			if effect.Duration > 0 {
+				remainingEffects = append(remainingEffects, effect)
+			}
+		}
+		cs.StatusEffects[charID] = remainingEffects
+	}
 }
 
 // isValidAction checks if an action can be performed
@@ -90,6 +256,21 @@ func (cs *CombatState) isValidAction(action Action, target *character.Character)
 	// Check if character has enough steam power
 	if action.SteamCost > cs.ActiveCharacter.Attributes.SteamPower.Value {
 		return false
+	}
+
+	// Check cooldown
+	if action.Cooldown > 0 && cs.Round-action.LastUsed < action.Cooldown {
+		return false
+	}
+
+	// Check range
+	if action.Range > 0 {
+		attackerLoc := cs.ActiveCharacter.GetLocation()
+		targetLoc := target.GetLocation()
+		distance := distanceBetween(attackerLoc, targetLoc)
+		if distance > action.Range {
+			return false
+		}
 	}
 
 	return true
@@ -181,4 +362,11 @@ func max(a, b int) int {
 		return a
 	}
 	return b
+}
+
+// distanceBetween calculates the distance between two coordinates
+func distanceBetween(a, b common.Coordinates) int {
+	dx := float64(a.X - b.X)
+	dy := float64(a.Y - b.Y)
+	return int(math.Sqrt(dx*dx + dy*dy))
 }

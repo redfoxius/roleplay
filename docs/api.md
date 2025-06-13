@@ -100,121 +100,203 @@ Transfers money between characters.
 
 ## Combat
 
-### Start Combat
+### Start Battle
 ```http
-POST /api/combat/start
+POST /api/battle/start
 ```
 
-Initiates a new combat between multiple players.
+Initiates a new battle with the specified type and participants.
 
 **Request Body:**
 ```json
 {
-    "participants": ["string"] // Array of character IDs
+    "type": "string", // One of: "pvp", "pve", "raid"
+    "participants": ["string"], // Array of character/mob IDs
+    "teams": { // Optional, for team battles
+        "team1": ["string"],
+        "team2": ["string"]
+    },
+    "terrain": "string", // Optional, defaults to "neutral"
+    "weather": "string"  // Optional, defaults to "clear"
 }
 ```
 
 **Response:**
 ```json
 {
-    "game_id": "string",
-    "state": {
+    "battle_id": "string",
+    "battle": {
         "id": "string",
-        "active_character": "string",
+        "type": "string",
+        "state": "string", // "active", "completed", "cancelled"
+        "participants": [
+            {
+                "id": "string",
+                "name": "string",
+                "type": "string", // "player" or "mob"
+                "class": "string",
+                "team": "string",
+                "health": "integer",
+                "steam_power": "integer",
+                "attributes": {
+                    "strength": { "name": "string", "value": "integer" },
+                    "dexterity": { "name": "string", "value": "integer" },
+                    "constitution": { "name": "string", "value": "integer" },
+                    "intelligence": { "name": "string", "value": "integer" },
+                    "wisdom": { "name": "string", "value": "integer" },
+                    "charisma": { "name": "string", "value": "integer" },
+                    "technical_aptitude": { "name": "string", "value": "integer" },
+                    "steam_power": { "name": "string", "value": "integer" },
+                    "mechanical_precision": { "name": "string", "value": "integer" },
+                    "arcane_knowledge": { "name": "string", "value": "integer" }
+                },
+                "abilities": [
+                    {
+                        "name": "string",
+                        "description": "string",
+                        "type": "string",
+                        "damage": "integer",
+                        "healing": "integer",
+                        "steam_cost": "integer",
+                        "range": "integer",
+                        "area": "integer",
+                        "cooldown": "integer"
+                    }
+                ],
+                "is_active": "boolean",
+                "experience": "integer",
+                "money": {
+                    "copper": "integer",
+                    "silver": "integer",
+                    "gold": "integer",
+                    "platinum": "integer"
+                }
+            }
+        ],
         "turn_order": ["string"],
         "current_turn": "integer",
-        "round": "integer"
+        "round": "integer",
+        "terrain": "string",
+        "weather": "string",
+        "teams": {
+            "team1": ["string"],
+            "team2": ["string"]
+        },
+        "status_effects": {
+            "participant_id": [
+                {
+                    "name": "string",
+                    "duration": "integer",
+                    "value": "integer",
+                    "description": "string"
+                }
+            ]
+        }
     },
     "error": "string" // Optional error message
 }
 ```
 
-### Start Mob Combat
+### Execute Battle Action
 ```http
-POST /api/mob-combat/start
+POST /api/battle/{battle_id}/action
 ```
 
-Starts combat between a character and a mob.
+Executes a combat action in the battle.
 
 **Request Body:**
 ```json
 {
-    "character_id": "string",
-    "mob_id": "string"
-}
-```
-
-**Response:**
-```json
-{
-    "combat": {
-        "character": {
-            "id": "string",
-            "name": "string",
-            "health": "integer",
-            "steam_power": "integer",
-            "money": {
-                "copper": "integer",
-                "silver": "integer",
-                "gold": "integer",
-                "platinum": "integer"
-            }
-        },
-        "mob": {
-            "id": "string",
-            "name": "string",
-            "type": "string",
-            "health": "integer",
-            "steam_power": "integer",
-            "money_drop": {
-                "copper": "integer",
-                "silver": "integer",
-                "gold": "integer",
-                "platinum": "integer"
-            }
-        },
-        "turn": "integer"
-    },
-    "error": "string" // Optional error message
-}
-```
-
-### Mob Combat Action
-```http
-POST /api/mob-combat/action
-```
-
-Performs a combat action between a character and mob.
-
-**Request Body:**
-```json
-{
-    "character_id": "string",
-    "mob_id": "string",
     "ability": {
         "name": "string",
         "description": "string",
-        "type": "string", // One of: "damage", "healing", "buff", "debuff"
+        "type": "string", // One of: "mechanical", "chemical", "arcane", "ranged", "melee"
         "damage": "integer",
+        "healing": "integer",
         "steam_cost": "integer",
+        "range": "integer",
+        "area": "integer",
         "cooldown": "integer"
-    }
+    },
+    "target_id": "string"
 }
 ```
 
 **Response:**
 ```json
 {
-    "character_damage": "integer",
-    "mob_damage": "integer",
-    "money_gained": {
-        "copper": "integer",
-        "silver": "integer",
-        "gold": "integer",
-        "platinum": "integer"
+    "damage": "integer",
+    "healing": "integer",
+    "status_effects": [
+        {
+            "name": "string",
+            "duration": "integer",
+            "value": "integer",
+            "description": "string"
+        }
+    ],
+    "combat_log": {
+        "round": "integer",
+        "turn": "integer",
+        "character": "string",
+        "action": "string",
+        "target": "string",
+        "damage": "integer",
+        "healing": "integer",
+        "effects": ["string"]
     },
-    "result": "string", // One of: "victory", "defeat", "ongoing"
+    "battle_state": "string", // "active", "completed", "cancelled"
     "error": "string" // Optional error message
+}
+```
+
+### Get Battle Status
+```http
+GET /api/battle/{battle_id}
+```
+
+Gets the current status of a battle.
+
+**Response:**
+```json
+{
+    "battle": {
+        "id": "string",
+        "type": "string",
+        "state": "string",
+        "participants": ["string"],
+        "turn_order": ["string"],
+        "current_turn": "integer",
+        "round": "integer",
+        "terrain": "string",
+        "weather": "string",
+        "teams": {
+            "team1": ["string"],
+            "team2": ["string"]
+        },
+        "status_effects": {
+            "participant_id": [
+                {
+                    "name": "string",
+                    "duration": "integer",
+                    "value": "integer",
+                    "description": "string"
+                }
+            ]
+        },
+        "combat_log": [
+            {
+                "round": "integer",
+                "turn": "integer",
+                "character": "string",
+                "action": "string",
+                "target": "string",
+                "damage": "integer",
+                "healing": "integer",
+                "effects": ["string"]
+            }
+        ]
+    }
 }
 ```
 

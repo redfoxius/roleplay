@@ -200,3 +200,78 @@ func (c *Character) RemoveMoney(money common.Currency) bool {
 func (c *Character) GetMoney() common.Currency {
 	return c.Money
 }
+
+// GetAbilities returns the character's abilities
+func (c *Character) GetAbilities() []common.Ability {
+	abilities := make([]common.Ability, 0)
+
+	// Add class-specific abilities
+	switch c.Class {
+	case Engineer:
+		abilities = append(abilities, []common.Ability{
+			{
+				Name:        "Steam Blast",
+				Description: "A powerful blast of steam",
+				Type:        "mechanical",
+				Damage:      20,
+				SteamCost:   15,
+				Range:       3,
+				Cooldown:    2,
+			},
+			{
+				Name:        "Repair",
+				Description: "Repair mechanical damage",
+				Type:        "healing",
+				Healing:     15,
+				SteamCost:   10,
+				Range:       2,
+				Cooldown:    3,
+			},
+		}...)
+	case Alchemist:
+		abilities = append(abilities, []common.Ability{
+			{
+				Name:        "Toxic Cloud",
+				Description: "Release a cloud of toxic gas",
+				Type:        "chemical",
+				Damage:      15,
+				SteamCost:   12,
+				Range:       2,
+				Area:        2,
+				Cooldown:    3,
+			},
+			{
+				Name:        "Healing Vapor",
+				Description: "Release healing steam",
+				Type:        "healing",
+				Healing:     20,
+				SteamCost:   15,
+				Range:       2,
+				Cooldown:    4,
+			},
+		}...)
+	case SteamMage:
+		abilities = append(abilities, []common.Ability{
+			{
+				Name:        "Steam Bolt",
+				Description: "A bolt of condensed steam",
+				Type:        "arcane",
+				Damage:      25,
+				SteamCost:   20,
+				Range:       4,
+				Cooldown:    2,
+			},
+			{
+				Name:        "Steam Shield",
+				Description: "Create a protective steam barrier",
+				Type:        "healing",
+				Healing:     10,
+				SteamCost:   15,
+				Range:       1,
+				Cooldown:    3,
+			},
+		}...)
+	}
+
+	return abilities
+}
